@@ -26,13 +26,22 @@
     (for [row (rest rows)]
       (zipmap headers row))))
  
-(defn read-to-maps-map [rows]
+(defn read-to-maps-partial [rows]
   (let [headers (->>
                   rows
                   first
                   (take-while (complement #{""}))
                   (map keyword))]
-    (map #(zipmap headers %) (rest rows))))
+    (map (partial zipmap headers) (rest rows))))
+
+(defn read-to-maps-fn [rows]
+  (let [headers (->>
+                  rows
+                  first
+                  (take-while (complement #{""}))
+                  (map keyword))
+        mapper (fn [row] (zipmap headers row))]
+    (map mapper (rest rows))))
  
 (defn read-to-maps-eval [rows]
   (let [headers (->>
@@ -53,5 +62,6 @@
 
 (comment
   (time-fn read-to-maps)
-  (time-fn read-to-maps-map)
+  (time-fn read-to-maps-partial)
+  (time-fn read-to-maps-fn)
   (time-fn read-to-maps-eval))
